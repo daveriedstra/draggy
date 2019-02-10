@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 import asyncio
+from random import randint
 from evdev import ecodes as e, InputDevice, UInput, categorize, uinput
+
+# min and max for touch ID
+TRACKING_ID_MIN = 1989
+TRACKING_ID_MAX = TRACKING_ID_MIN + 1000
 
 # todo - get this from a config file or stdin
 dev_name = '/dev/input/event14'
@@ -17,6 +22,7 @@ except uinput.UInputError:
 
 async def handler(dev, sur):
     dragging = False
+    tracking_id = -1
     async for event in dev.async_read_loop():
         if event.type == e.EV_KEY:
             event = categorize(event)
@@ -24,11 +30,16 @@ async def handler(dev, sur):
                 dragging = event.keystate == 1
                 click_val = 1 if dragging else 0
 
+                # tracking ID keeps touches separate. We try to avoid
+                # re-use of an ID to prevent jumps.
+                if dragging:
+                    tracking_id = randint(TRACKING_ID_MIN, TRACKING_ID_MAX)
+                else:
+                    tracking_id = -1
+
                 # to fake multitouch events, even if it's just one touch,
                 # we need to fake these events as well.
-                # I'm not sure where ID comes from (except that it's -1
-                # when the touch leaves), but my birth year happens to be valid
-                sur.write(e.EV_ABS, e.ABS_MT_TRACKING_ID, 1989 * click_val - 1)
+                sur.write(e.EV_ABS, e.ABS_MT_TRACKING_ID, tracking_id)
                 sur.write(e.EV_KEY, e.BTN_TOUCH, click_val)
                 sur.write(e.EV_KEY, e.BTN_TOOL_FINGER, click_val)
 
@@ -47,8 +58,12 @@ async def handler(dev, sur):
             if event.type == e.EV_ABS:
                 if event.code == e.ABS_X:
                     sur.write(e.EV_ABS, e.ABS_MT_POSITION_X, event.value)
+                    sur.write(e.EV_ABS, e.ABS_X, event.value)
                 elif event.code == e.ABS_Y:
                     sur.write(e.EV_ABS, e.ABS_MT_POSITION_Y, event.value)
+                    sur.write(e.EV_ABS, e.ABS_Y, event.value)
+                elif event.code == e.ABS_MT_SLOT and event.value == 0:
+                    sur.write(e.EV_ABS, e.ABS_MT_SLOT, 0)
             elif event.type == e.EV_SYN:
                 sur.syn()
 
