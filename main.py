@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 import asyncio
-from evdev import ecodes as e, InputDevice, UInput, categorize
-
-# NTS - if opening /dev/uinput doesn't work,
-# sudo chmod 666 /dev/uniput
-# sudo modprobe uinput
+from evdev import ecodes as e, InputDevice, UInput, categorize, uinput
 
 # todo - get this from a config file or stdin
 dev_name = '/dev/input/event14'
 
-device = InputDevice(dev_name)
-surrogate = UInput.from_device(device, name=device.name, version=3)
+try:
+    device = InputDevice(dev_name)
+    surrogate = UInput.from_device(device, name=device.name, version=3)
+except uinput.UInputError:
+    print('/dev/uinput not available; try the following:')
+    print('sudo chmod 666 /dev/uinput')
+    print('sudo modprobe uinput')
+    exit(1)
 
 
 async def handler(dev, sur):
@@ -52,6 +54,10 @@ async def handler(dev, sur):
 
     sur.close()
 
+
 # start handling async events
-loop = asyncio.get_event_loop()
-loop.run_until_complete(handler(device, surrogate))
+try:
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(handler(device, surrogate))
+except KeyboardInterrupt:
+    exit(0)
