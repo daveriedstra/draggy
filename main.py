@@ -1,19 +1,27 @@
 #!/usr/bin/env python3
+'Enable 3-finger-drag on the specified touchpad.'
 import asyncio
+import argparse
 from random import randint
 from evdev import ecodes, InputDevice, UInput, categorize, uinput
 
+# command line arguments
+opt = argparse.ArgumentParser(description=__doc__)
+opt.add_argument('device_path',
+                 help='Path of device to read from, eg, /dev/input/event14')
+opt.add_argument('-g', '--grab', action='store_true',
+                 help='Exclusively handle input device during drag. '
+                 'Experimental. This would prevent default DE handling of '
+                 '3-finger gestures, which is useful in cases where they '
+                 ' can\'t be configured, but this feature is still buggy: '
+                 'sometimes the drag gets stuck.')
+args = opt.parse_args()
+
+# constants
+GRAB = args.grab
+INPUT_DEVICE_PATH = args.device_path
 TRACKING_ID_MIN = 1989
 TRACKING_ID_MAX = TRACKING_ID_MIN + 1000
-
-# exclusively handle input device during 3fd
-# this would prevent default DE handling of 3-finger gestures,
-# which is useful in cases where they can't be configured,
-# but this feature is still buggy: sometimes the drag gets "stuck."
-GRAB = False
-
-# todo - get this from a config file or stdin
-input_device_path = '/dev/input/event14'
 
 
 def set_lock(in_dev, lock):
@@ -105,7 +113,7 @@ async def handler(in_dev, sur_dev):
 
 # get input device and create surrogate uinput device
 try:
-    input_device = InputDevice(input_device_path)
+    input_device = InputDevice(INPUT_DEVICE_PATH)
     surrogate_device = UInput.from_device(input_device, name=input_device.name,
                                           version=3)
 except uinput.UInputError:
