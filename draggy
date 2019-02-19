@@ -125,7 +125,8 @@ if not (NUM_FINGERS == 3 or NUM_FINGERS == 4):
 # get input device and create surrogate uinput device
 try:
     input_device = InputDevice(INPUT_DEVICE_PATH)
-    surrogate_device = UInput.from_device(input_device, name=input_device.name,
+    surrogate_name = input_device.name + '-draggy'
+    surrogate_device = UInput.from_device(input_device, name=surrogate_name,
                                           version=3)
 except uinput.UInputError:
     print('/dev/uinput not available; try the following:')
