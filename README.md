@@ -27,6 +27,10 @@ The script also needs `/dev/uinput` access. To temporarily enable, run `sudo chm
 
 No fancy install script yet. Use DE tools or XDG-autostart to call the script on login.
 
+### Testing
+
+I only have one laptop, but it Works For Me™. If it doesn't for you, please file an issue with as much documentation as you can so that I can try to fix it.
+
 ### LICENSE
 
 Copyright (C) 2019 Dave Riedstra. This program is distributed under the terms of the GNU General Public License.
