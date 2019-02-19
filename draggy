@@ -133,6 +133,9 @@ except uinput.UInputError:
     print('sudo chmod 666 /dev/uinput')
     print('sudo modprobe uinput')
     exit(1)
+except FileNotFoundError:
+    print('Input device incorrect or not available. Confirm path with `libinput list-devices`.')
+    exit(1)
 
 # start handling async events
 try:
