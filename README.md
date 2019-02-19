@@ -11,7 +11,7 @@ To use this script, pass it the path of the touchpad device to enable gestures o
 
 You can find the path with `libinput list-devices` (look for the device with the `gesture` capability, not necessarily the one with `Trackpad` in its name).
 
-The script enables three-finger drag by default. Four-finger drag is available with the `-c` or `--count` flags:
+The script enables three-finger drag by default. Four-finger drag is available with the `-c` or `--count` option:
 
 `draggy -c 4 /dev/input/event14`
 
