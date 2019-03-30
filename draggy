@@ -4,6 +4,8 @@ import asyncio
 import argparse
 from random import randint
 from evdev import ecodes, InputDevice, UInput, categorize, uinput
+from threading import Thread, Event
+import time
 
 # command line arguments
 opt = argparse.ArgumentParser(description=__doc__)
@@ -26,8 +28,15 @@ TRACKING_ID_MIN = 1989
 TRACKING_ID_MAX = TRACKING_ID_MIN + 1000
 NUM_FINGERS = int(args.count)
 
+# duration between finger touch and drag start.
+# if NUM_FINGERS are still down at the end of this duration,
+# then the drag is allowed to start. Prevents starting drags
+# when intended gesture uses a greater number of fingers.
+TIMEOUT_DURATION_PRE = 0.1
+
 # vars
 drag_code = ecodes.BTN_TOOL_QUADTAP if NUM_FINGERS == 4 else ecodes.BTN_TOOL_TRIPLETAP
+prevent_start = Event()
 
 
 def set_lock(in_dev, lock):
@@ -82,27 +91,38 @@ async def handler(in_dev, sur_dev):
     '''The asyncio handler.'''
     is_drag_start_frame = False
     is_drag_end_frame = False
-    is_dragging_3 = False
+    is_dragging = False
+
+
+    def maybe_send_start():
+        prevent_start.clear()
+        time.sleep(TIMEOUT_DURATION_PRE)
+        if not prevent_start.isSet():
+            send_3fd_frame(in_dev, sur_dev, start=True)
+
 
     async for event in in_dev.async_read_loop():
         if event.type == ecodes.EV_SYN:
             if is_drag_start_frame:
-                send_3fd_frame(in_dev, sur_dev, start=True)
+                subthread = Thread(target=maybe_send_start)
+                subthread.start()
                 is_drag_start_frame = False
             elif is_drag_end_frame:
                 send_3fd_frame(in_dev, sur_dev, start=False)
                 is_drag_end_frame = False
-            elif is_dragging_3:
+            elif is_dragging:
                 sur_dev.syn()
 
         elif event.type == ecodes.EV_KEY:
             if event.code == drag_code:
                 event = categorize(event)
-                is_drag_start_frame = not is_dragging_3 and event.keystate == 1
-                is_drag_end_frame = is_dragging_3 and event.keystate == 0
-                is_dragging_3 = event.keystate == 1
+                is_drag_start_frame = not is_dragging and event.keystate == 1
+                is_drag_end_frame = is_dragging and event.keystate == 0
+                is_dragging = event.keystate == 1
+            elif event.value == 1:
+                prevent_start.set()
 
-        elif is_dragging_3 and event.type == ecodes.EV_ABS:
+        elif is_dragging and event.type == ecodes.EV_ABS:
             if event.code == ecodes.ABS_X:
                 sur_dev.write(ecodes.EV_ABS, ecodes.ABS_MT_POSITION_X,
                               event.value)
