@@ -33,10 +33,12 @@ NUM_FINGERS = int(args.count)
 # then the drag is allowed to start. Prevents starting drags
 # when intended gesture uses a greater number of fingers.
 TIMEOUT_DURATION_PRE = 0.1
+TIMEOUT_DURATION_POST = 0.3
 
 # vars
 drag_code = ecodes.BTN_TOOL_QUADTAP if NUM_FINGERS == 4 else ecodes.BTN_TOOL_TRIPLETAP
 prevent_start = Event()
+prevent_end = Event()
 
 
 def set_lock(in_dev, lock):
@@ -101,14 +103,23 @@ async def handler(in_dev, sur_dev):
             send_3fd_frame(in_dev, sur_dev, start=True)
 
 
+    def maybe_send_end():
+        prevent_end.clear()
+        time.sleep(TIMEOUT_DURATION_POST)
+        if not prevent_end.isSet():
+            send_3fd_frame(in_dev, sur_dev, start=False)
+
+
     async for event in in_dev.async_read_loop():
         if event.type == ecodes.EV_SYN:
             if is_drag_start_frame:
-                subthread = Thread(target=maybe_send_start)
-                subthread.start()
+                pre_thread = Thread(target=maybe_send_start)
+                pre_thread.start()
+                prevent_end.set()
                 is_drag_start_frame = False
             elif is_drag_end_frame:
-                send_3fd_frame(in_dev, sur_dev, start=False)
+                post_thread = Thread(target=maybe_send_end)
+                post_thread.start()
                 is_drag_end_frame = False
             elif is_dragging:
                 sur_dev.syn()
