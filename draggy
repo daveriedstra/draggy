@@ -3,9 +3,14 @@
 import asyncio
 import argparse
 from random import randint
-from evdev import ecodes, InputDevice, UInput, categorize, uinput
 from threading import Thread, Event
 import time
+try:
+    from evdev import ecodes, InputDevice, UInput, categorize, uinput
+except ImportError:
+    print('Error accessing evdev. Try installing the python3-evdev package.')
+    exit(1)
+
 
 # command line arguments
 opt = argparse.ArgumentParser(description=__doc__)
