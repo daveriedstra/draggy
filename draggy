@@ -19,6 +19,9 @@ opt.add_argument('-g', '--grab', action='store_true',
                  'sometimes the drag gets stuck.')
 opt.add_argument('-c', '--count', default=3,
                  help='The number of fingers to enable drag for.')
+opt.add_argument('-l', '--lock', action='store_true', help='"Locked Drag". Enables '
+                 'a longer (500ms) timeout at the end of a drag for the purposes '
+                 'of chaining drags together.')
 args = opt.parse_args()
 
 # constants
@@ -33,7 +36,7 @@ NUM_FINGERS = int(args.count)
 # then the drag is allowed to start. Prevents starting drags
 # when intended gesture uses a greater number of fingers.
 TIMEOUT_DURATION_PRE = 0.05
-TIMEOUT_DURATION_POST = 0.2
+TIMEOUT_DURATION_POST = 0.5 if args.lock else 0.2
 
 # vars
 drag_code = ecodes.BTN_TOOL_QUADTAP if NUM_FINGERS == 4 else ecodes.BTN_TOOL_TRIPLETAP
