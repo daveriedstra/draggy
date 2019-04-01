@@ -18,7 +18,7 @@ The script enables three-finger drag by default. Four-finger drag is available w
 ### Dependencies
 
 * Python 3
-* [python-evdev](https://python-evdev.readthedocs.io/en/latest/): `sudo pip install evdev`
+* [python-evdev](https://python-evdev.readthedocs.io/en/latest/): `sudo pip install evdev` or install `python3-evdev` package
 * libinput
 
 The script also needs `/dev/uinput` access. To temporarily enable, run `sudo chmod 0666 /dev/uinput`. To permanently enable, copy `40-uinput.rules` to `/etc/udev/rules.d`, ensure your user is in the `uinput` group, and restart your machine. The `uinput` module is builtin to some kernels, but if yours does not include it you will have to load it with `sudo modprobe uinput`.
