@@ -32,8 +32,8 @@ NUM_FINGERS = int(args.count)
 # if NUM_FINGERS are still down at the end of this duration,
 # then the drag is allowed to start. Prevents starting drags
 # when intended gesture uses a greater number of fingers.
-TIMEOUT_DURATION_PRE = 0.1
-TIMEOUT_DURATION_POST = 0.3
+TIMEOUT_DURATION_PRE = 0.05
+TIMEOUT_DURATION_POST = 0.2
 
 # vars
 drag_code = ecodes.BTN_TOOL_QUADTAP if NUM_FINGERS == 4 else ecodes.BTN_TOOL_TRIPLETAP
