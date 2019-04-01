@@ -11,14 +11,14 @@ import time
 opt = argparse.ArgumentParser(description=__doc__)
 opt.add_argument('device_path',
                  help='Path of device to read from, eg, /dev/input/event14')
+opt.add_argument('-c', '--count', default=3,
+                 help='The number of fingers to enable drag for.')
 opt.add_argument('-g', '--grab', action='store_true',
                  help='Exclusively handle input device during drag. '
                  'Experimental. This would prevent default DE handling of '
                  '3-finger gestures, which is useful in cases where they '
                  ' can\'t be configured, but this feature is still buggy: '
                  'sometimes the drag gets stuck.')
-opt.add_argument('-c', '--count', default=3,
-                 help='The number of fingers to enable drag for.')
 opt.add_argument('-l', '--lock', action='store_true', help='"Locked Drag". Enables '
                  'a longer (500ms) timeout at the end of a drag for the purposes '
                  'of chaining drags together.')
