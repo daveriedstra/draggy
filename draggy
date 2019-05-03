@@ -91,6 +91,7 @@ def send_3fd_frame(in_dev, sur_dev, start=False):
     sur_dev.write(ecodes.EV_KEY, ecodes.BTN_TOUCH, click_val)
     sur_dev.write(ecodes.EV_KEY, ecodes.BTN_TOOL_FINGER, click_val)
     sur_dev.write(ecodes.EV_ABS, ecodes.ABS_PRESSURE, 155 * click_val)
+    sur_dev.write(ecodes.EV_ABS, ecodes.ABS_MT_PRESSURE, 155 * click_val)
 
     # this is the actual click event
     sur_dev.write(ecodes.EV_KEY, ecodes.BTN_LEFT, click_val)
