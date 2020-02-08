@@ -10,11 +10,12 @@ try:
 except ImportError:
     print('Error accessing evdev. Try installing the python3-evdev package.')
     exit(1)
+from get_gesture_devices import get_gesture_devices
 
 
 # command line arguments
 opt = argparse.ArgumentParser(description=__doc__)
-opt.add_argument('device_path',
+opt.add_argument('-d', '--device_path', default=None,
                  help='Path of device to read from, eg, /dev/input/event14')
 opt.add_argument('-c', '--count', default=3,
                  help='The number of fingers to enable drag for.')
@@ -40,8 +41,8 @@ NUM_FINGERS = int(args.count)
 # if NUM_FINGERS are still down at the end of this duration,
 # then the drag is allowed to start. Prevents starting drags
 # when intended gesture uses a greater number of fingers.
-TIMEOUT_DURATION_PRE = 0.05
-TIMEOUT_DURATION_POST = 0.5 if args.lock else 0.2
+TIMEOUT_DURATION_PRE = 0.02
+TIMEOUT_DURATION_POST = 0.5 if args.lock else 0.05
 
 # vars
 drag_code = ecodes.BTN_TOOL_QUADTAP if NUM_FINGERS == 4 else ecodes.BTN_TOOL_TRIPLETAP
@@ -157,29 +158,43 @@ async def handler(in_dev, sur_dev):
     sur_dev.close()
 
 
+def activate_draggy_device(input_device):
+  '''Main routine, called once per device'''
+
+  # get input device and create surrogate uinput device
+  try:
+      surrogate_name = input_device.name + '-draggy'
+      surrogate_device = UInput.from_device(input_device, name=surrogate_name,
+                                            version=3)
+  except uinput.UInputError:
+      print('/dev/uinput not available; try the following:')
+      print('sudo chmod 666 /dev/uinput')
+      print('sudo modprobe uinput')
+      exit(1)
+  except FileNotFoundError:
+      print('Input device incorrect or not available. Confirm path with `libinput list-devices`.')
+      exit(1)
+
+  # start handling async events
+  print('activating draggy surrogate device for %s at %s' % (input_device.name,
+                                                             input_device.path))
+  try:
+      loop = asyncio.get_event_loop()
+      loop.run_until_complete(handler(input_device, surrogate_device))
+  except KeyboardInterrupt:
+      exit(0)
+
+
 # input check
 if not (NUM_FINGERS == 3 or NUM_FINGERS == 4):
     print('Draggy only works for 3 or 4 finger drag -- sorry!')
     exit(1)
 
-# get input device and create surrogate uinput device
-try:
-    input_device = InputDevice(INPUT_DEVICE_PATH)
-    surrogate_name = input_device.name + '-draggy'
-    surrogate_device = UInput.from_device(input_device, name=surrogate_name,
-                                          version=3)
-except uinput.UInputError:
-    print('/dev/uinput not available; try the following:')
-    print('sudo chmod 666 /dev/uinput')
-    print('sudo modprobe uinput')
-    exit(1)
-except FileNotFoundError:
-    print('Input device incorrect or not available. Confirm path with `libinput list-devices`.')
-    exit(1)
+# use specified device or all available devices
+if INPUT_DEVICE_PATH != None:
+  devices = [InputDevice(INPUT_DEVICE_PATH)]
+else:
+  devices = get_gesture_devices()
 
-# start handling async events
-try:
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(handler(input_device, surrogate_device))
-except KeyboardInterrupt:
-    exit(0)
+# engage
+[activate_draggy_device(dev) for dev in devices]
