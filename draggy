@@ -158,8 +158,8 @@ async def handler(in_dev, sur_dev):
     sur_dev.close()
 
 
-def activate_draggy_device(input_device):
-  '''Main routine, called once per device'''
+async def activate_draggy_device(input_device):
+  '''Per-device coroutine'''
 
   # get input device and create surrogate uinput device
   try:
@@ -178,23 +178,34 @@ def activate_draggy_device(input_device):
   # start handling async events
   print('activating draggy surrogate device for %s at %s' % (input_device.name,
                                                              input_device.path))
+
+  return await handler(input_device, surrogate_device)
+
+
+def main():
+  '''Main routine'''
+
+  # input check
+  if not (NUM_FINGERS == 3 or NUM_FINGERS == 4):
+      print('Draggy only works for 3 or 4 finger drag -- sorry!')
+      exit(1)
+
+  # use specified device or all available devices
+  if INPUT_DEVICE_PATH != None:
+    devices = [InputDevice(INPUT_DEVICE_PATH)]
+  else:
+    devices = get_gesture_devices()
+
+  # start async loops
+  loop = asyncio.get_event_loop()
   try:
-      loop = asyncio.get_event_loop()
-      loop.run_until_complete(handler(input_device, surrogate_device))
+    coroutines = [activate_draggy_device(dev) for dev in devices]
+    groups = asyncio.wait(coroutines)
+    loop.run_until_complete(groups)
+    loop.close()
   except KeyboardInterrupt:
-      exit(0)
+    loop.close()
+    exit(0)
 
 
-# input check
-if not (NUM_FINGERS == 3 or NUM_FINGERS == 4):
-    print('Draggy only works for 3 or 4 finger drag -- sorry!')
-    exit(1)
-
-# use specified device or all available devices
-if INPUT_DEVICE_PATH != None:
-  devices = [InputDevice(INPUT_DEVICE_PATH)]
-else:
-  devices = get_gesture_devices()
-
-# engage
-[activate_draggy_device(dev) for dev in devices]
+main()
