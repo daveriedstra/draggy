@@ -31,8 +31,8 @@ The script runs fine in place, but for continued use you may want to set it to a
 
 1. Copy `draggy` and `get_gesture_devices.py` to `/usr/local/bin`
 2. Copy `draggy.service` to `/usr/lib/systemd/system`
-3. Test the unit with `systemd start draggy.service`
-4. Enable the unit to run on boot with `systemd enable draggy.service`
+3. Test the unit with `systemctl start draggy.service`
+4. Enable the unit to run on boot with `systemctl enable draggy.service`
 
 Removal consists of reversing the above steps:
 
