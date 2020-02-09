@@ -194,7 +194,7 @@ def main():
   if INPUT_DEVICE_PATH != None:
     devices = [InputDevice(INPUT_DEVICE_PATH)]
   else:
-    devices = get_gesture_devices()
+    devices = get_gesture_devices(NUM_FINGERS)
 
   # start async loops
   loop = asyncio.get_event_loop()
