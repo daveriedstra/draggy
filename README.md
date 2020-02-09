@@ -25,9 +25,20 @@ The script enables three-finger drag by default. Four-finger drag is available w
 
 The script also needs `/dev/uinput` access. To temporarily enable, run `sudo chmod 0666 /dev/uinput`. To permanently enable, copy `40-uinput.rules` to `/etc/udev/rules.d`, ensure your user is in the `uinput` group, and restart your machine. The `uinput` module is builtin to some kernels, but if yours does not include it you will have to load it with `sudo modprobe uinput`.
 
-### Autostarting
+### Installation & Removal
 
-No fancy install script yet. Use DE tools or XDG-autostart to call the script on login.
+The script runs fine in place, but for continued use you may want to set it to auto-start. There a number of ways to do this, below is a suggestion using systemd:
+
+1. Copy `draggy` and `get_gesture_devices.py` to `/usr/local/bin`
+2. Copy `draggy.service` to `/usr/lib/systemd/system`
+3. Test the unit with `systemd start draggy.service`
+4. Enable the unit to run on boot with `systemd enable draggy.service`
+
+Removal consists of reversing the above steps:
+
+1. Disable the unit with `systemd disable draggy.service`
+2. Remove `/usr/lib/systemd/system/draggy.service`
+3. Remove `/usr/local/bin/draggy` and `/usr/local/bin/get_gesture_devices.py`
 
 ### Testing
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=draggy
+
+[Service]
+Type=simple
+ExecStart=draggy
+
+[Install]
+WantedBy=graphical.target
