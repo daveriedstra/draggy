@@ -164,10 +164,24 @@ async def activate_draggy_device(input_device):
   # get input device and create surrogate uinput device
   try:
       surrogate_name = input_device.name + '-draggy'
+      surrogate_caps = input_device.capabilities()
       surrogate_device = UInput.from_device(input_device, name=surrogate_name,
                                             version=3)
-  except uinput.UInputError:
-      print('/dev/uinput not available; try the following:')
+      # this condition just creates a clone of the device with a new name,
+      # but also makes sure that it has the BTN_LEFT capability
+      if ecodes.BTN_LEFT not in surrogate_caps[ecodes.EV_KEY]:
+          del surrogate_caps[0] # https://github.com/gvalkov/python-evdev/issues/60#issuecomment-238791290
+          surrogate_caps[ecodes.EV_KEY].append(ecodes.BTN_LEFT)
+          dinfo = input_device.info
+          surrogate_device = UInput(events=surrogate_caps, name=surrogate_name,
+                                    version=dinfo.version,
+                                    vendor=dinfo.vendor,
+                                    product=dinfo.product,
+                                    bustype=dinfo.bustype,
+                                    input_props=input_device.input_props())
+  except uinput.UInputError as e:
+      print(e)
+      print('/dev/uinput might not be available, try the following:')
       print('sudo chmod 666 /dev/uinput')
       print('sudo modprobe uinput')
       exit(1)
