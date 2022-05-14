@@ -203,7 +203,7 @@ async def activate_draggy_device(input_device):
   return await handler(input_device, surrogate_device)
 
 
-def main():
+async def main():
   '''Main routine'''
 
   # input check
@@ -217,16 +217,19 @@ def main():
   else:
     devices = get_gesture_devices(NUM_FINGERS)
 
-  # start async loops
-  loop = asyncio.get_event_loop()
+  # start async tasks
   try:
-    coroutines = [activate_draggy_device(dev) for dev in devices]
-    groups = asyncio.wait(coroutines)
-    loop.run_until_complete(groups)
-    loop.close()
+    tasks = [asyncio.create_task(activate_draggy_device(dev)) for dev in devices]
+    # await tasks
+    for task in tasks:
+        await task
   except KeyboardInterrupt:
-    loop.close()
+    for task in tasks:
+        if not task.cancelled():
+            task.cancel()
+
+
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
     exit(0)
-
-
-main()
