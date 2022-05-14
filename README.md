@@ -40,9 +40,19 @@ Removal consists of reversing the above steps:
 2. Remove `/usr/lib/systemd/system/draggy.service`
 3. Remove `/usr/local/bin/draggy` and `/usr/local/bin/get_gesture_devices.py`
 
-### Testing
+### Supported devices
 
-Tested on a 2013 MacBook Air and a ThinkPad T580. If it doesn't work for you, please file an issue with as much documentation as you can so that I can try to fix it.
+Draggy is tested & frequently used on these devices:
+
+* 2013 MacBook Air
+* ThinkPad T580 (`Synaptics TM3276-031`)
+* Wacom Intuos PT S Finger
+
+I don't currently have as much time as I'd like to field support requests, and I have limited hardware to test on. **However:** please file them anyway in the off chance someone else might be able to help or I come across the same hardware.
+
+#### If it doesn't work for you...
+
+If there are no errors and draggy still mysteriously doesn't seem to be working, try modifying the value of `CLICK_PRESSURE`. I haven't found a good way to infer what this should be from the reported device capabilities and at least on the Synaptics touchpad in my ThinkPad, it's... particular.
 
 ### LICENSE
 
