@@ -37,6 +37,10 @@ TRACKING_ID_MIN = 1989
 TRACKING_ID_MAX = TRACKING_ID_MIN + 1000
 NUM_FINGERS = int(args.count)
 
+# If draggy inexplicably doesn't work for your device, try adjusting this value.
+# Unfortunately I can't infer it from the device capabilities.
+CLICK_PRESSURE = 70
+
 # duration between finger touch and drag start.
 # if NUM_FINGERS are still down at the end of this duration,
 # then the drag is allowed to start. Prevents starting drags
@@ -91,8 +95,8 @@ def send_3fd_frame(in_dev, sur_dev, start=False):
     sur_dev.write(ecodes.EV_ABS, ecodes.ABS_MT_TRACKING_ID, tracking_id)
     sur_dev.write(ecodes.EV_KEY, ecodes.BTN_TOUCH, click_val)
     sur_dev.write(ecodes.EV_KEY, ecodes.BTN_TOOL_FINGER, click_val)
-    sur_dev.write(ecodes.EV_ABS, ecodes.ABS_PRESSURE, 155 * click_val)
-    sur_dev.write(ecodes.EV_ABS, ecodes.ABS_MT_PRESSURE, 155 * click_val)
+    sur_dev.write(ecodes.EV_ABS, ecodes.ABS_PRESSURE, CLICK_PRESSURE * click_val)
+    sur_dev.write(ecodes.EV_ABS, ecodes.ABS_MT_PRESSURE, CLICK_PRESSURE * click_val)
 
     # this is the actual click event
     sur_dev.write(ecodes.EV_KEY, ecodes.BTN_LEFT, click_val)
