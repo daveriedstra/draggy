@@ -113,14 +113,14 @@ async def handler(in_dev, sur_dev):
     def maybe_send_start():
         prevent_start.clear()
         time.sleep(TIMEOUT_DURATION_PRE)
-        if not prevent_start.isSet():
+        if not prevent_start.is_set():
             send_3fd_frame(in_dev, sur_dev, start=True)
 
 
     def maybe_send_end():
         prevent_end.clear()
         time.sleep(TIMEOUT_DURATION_POST)
-        if not prevent_end.isSet():
+        if not prevent_end.is_set():
             send_3fd_frame(in_dev, sur_dev, start=False)
 
 
@@ -158,6 +158,9 @@ async def handler(in_dev, sur_dev):
                 sur_dev.write(ecodes.EV_ABS, ecodes.ABS_Y, event.value)
             elif event.code == ecodes.ABS_MT_SLOT and event.value == 0:
                 sur_dev.write(ecodes.EV_ABS, ecodes.ABS_MT_SLOT, 0)
+
+        # else:
+        #     print(categorize(event), event.value)
 
     sur_dev.close()
 
